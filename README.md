@@ -69,4 +69,4 @@ python -m pytest -q
 
 ## Notes
 - `services/provider_gateway.py` currently returns simulated provider responses.
-- This design is ready for plugging in real provider APIs next.
+- This design is ready for plugging in real provider APIs next..
