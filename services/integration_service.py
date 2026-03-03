@@ -47,7 +47,9 @@ def _mask_api_key(api_key: str) -> str:
 
 def register_api_key(db: Session, user: User, api_key: str) -> APIKeyRegisterResponse:
     provider_name, provider_key = detect_provider_from_api_key(api_key)
-    digest = sha256(api_key.encode("utf-8")).hexdigest()
+    # Scope digest by user id so two users can register the same provider key format
+    # without hitting a global unique constraint.
+    digest = sha256(f"{user.id}:{api_key}".encode("utf-8")).hexdigest()
     masked = _mask_api_key(api_key)
 
     db.query(UserAPIKey).filter(UserAPIKey.user_id == user.id).update({UserAPIKey.is_active: False})

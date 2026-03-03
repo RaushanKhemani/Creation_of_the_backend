@@ -1,6 +1,7 @@
 from typing import Generator
 
-from fastapi import Depends, Header, HTTPException, status
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError
 from sqlalchemy.orm import Session
 
@@ -8,6 +9,8 @@ from config import get_settings
 from db.models.user import User
 from db.session import SessionLocal
 from services.auth_service import decode_access_token
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token", auto_error=False)
 
 
 def get_db() -> Generator[Session, None, None]:
@@ -19,7 +22,7 @@ def get_db() -> Generator[Session, None, None]:
 
 
 def get_current_user(
-    authorization: str | None = Header(default=None, alias="Authorization"),
+    token: str | None = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
 ) -> User:
     settings = get_settings()
@@ -28,13 +31,6 @@ def get_current_user(
         detail="Invalid or missing authorization token",
     )
 
-    if not authorization:
-        raise credentials_exception
-
-    if not authorization.lower().startswith("bearer "):
-        raise credentials_exception
-
-    token = authorization.split(" ", 1)[1].strip()
     if not token:
         raise credentials_exception
 
