@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 
 class ChatRouteRequest(BaseModel):
-    provider_key: str = Field(min_length=2, max_length=64)
+    provider_key: str | None = Field(default=None, min_length=2, max_length=64)
     prompt: str = Field(min_length=1, max_length=8000)
     conversation_id: int | None = None
 

@@ -3,10 +3,12 @@ from fastapi.testclient import TestClient
 
 def test_chat_route_and_history(client: TestClient, auth_token: str) -> None:
     headers = {"Authorization": f"Bearer {auth_token}"}
+    api_key_res = client.post("/api/v1/integrations/api-key", json={"api_key": "sk-test-integration-key-12345"}, headers=headers)
+    assert api_key_res.status_code == 200
 
     route_res = client.post(
         "/api/v1/chat/route",
-        json={"provider_key": "chatgpt", "prompt": "Design backend milestones for 30 days."},
+        json={"prompt": "Design backend milestones for 30 days."},
         headers=headers,
     )
     assert route_res.status_code == 200

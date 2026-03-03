@@ -32,6 +32,13 @@ DEFAULT_PROVIDERS = [
         "enabled": True,
         "notes": "Creative brainstorming and concept exploration.",
     },
+    {
+        "key": "claude",
+        "name": "Claude",
+        "category": "general_assistant",
+        "enabled": True,
+        "notes": "Reasoning-focused assistant from Anthropic.",
+    },
 ]
 
 

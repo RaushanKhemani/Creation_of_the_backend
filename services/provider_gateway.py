@@ -21,6 +21,8 @@ class ProviderGateway:
             text = f"[Gemini] Structured response for: {prompt}"
         elif provider_key == "grok":
             text = f"[Grok] Creative angle on: {prompt}"
+        elif provider_key == "claude":
+            text = f"[Claude] Careful reasoning response for: {prompt}"
         else:
             raise ValueError("Unsupported provider key")
 
