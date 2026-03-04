@@ -13,11 +13,14 @@ router = APIRouter()
 def health_check() -> dict:
     settings = get_settings()
     return {
-        "status": "ok",
-        "service": settings.app_name,
-        "version": settings.app_version,
-        "environment": settings.environment,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "success": True,
+        "data": {
+            "status": "ok",
+            "service": settings.app_name,
+            "version": settings.app_version,
+            "environment": settings.environment,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        },
     }
 
 
@@ -25,4 +28,4 @@ def health_check() -> dict:
 def readiness_check() -> dict:
     with SessionLocal() as db:
         db.execute(text("SELECT 1"))
-    return {"status": "ready"}
+    return {"success": True, "data": {"status": "ready"}}

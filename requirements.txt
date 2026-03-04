@@ -7,8 +7,9 @@ httpx
 sqlalchemy
 alembic
 python-jose[cryptography]
-passlib
+bcrypt
 python-multipart
 orjson
 psycopg[binary]
+cryptography
 pytest

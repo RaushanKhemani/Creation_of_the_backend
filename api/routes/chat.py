@@ -1,30 +1,56 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from api.dependencies import get_current_user, get_db
+from api.dependencies import enforce_rate_limit, get_current_user, get_db
 from db.models.user import User
-from schemas.chat import ChatRouteRequest, ChatRouteResponse, MessageRead
-from services.chat_service import list_conversation_messages, route_chat
+from schemas.chat import ChatRouteRequest, ChatWindowCreateRequest
+from services.chat_service import create_chat_window, list_chat_messages, list_chat_windows, route_chat
+from services.integration_service import get_active_integration
 
 router = APIRouter()
 
 
-@router.post("/route", response_model=ChatRouteResponse, status_code=status.HTTP_200_OK)
-def route_prompt(
+@router.post("/windows", status_code=status.HTTP_201_CREATED)
+def create_window(
+    payload: ChatWindowCreateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> dict:
+    active = get_active_integration(db, current_user)
+    if not active:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Activate an API key first")
+    return {
+        "success": True,
+        "data": create_chat_window(db, current_user, payload, provider_key=active.provider_key).model_dump(),
+    }
+
+
+@router.get("/windows")
+def list_windows(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)) -> dict:
+    return {"success": True, "data": [item.model_dump() for item in list_chat_windows(db, current_user)]}
+
+
+@router.post("/route", status_code=status.HTTP_200_OK)
+async def route_prompt(
     payload: ChatRouteRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> ChatRouteResponse:
+    _: None = Depends(enforce_rate_limit),
+) -> dict:
     try:
-        return route_chat(db, current_user, payload)
+        response = await route_chat(db, current_user, payload)
+        return {"success": True, "data": response.model_dump()}
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
 
-@router.get("/conversations/{conversation_id}/messages", response_model=list[MessageRead])
+@router.get("/conversations/{chat_id}/messages")
 def get_conversation_messages(
-    conversation_id: int,
+    chat_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> list[MessageRead]:
-    return list_conversation_messages(db, current_user.id, conversation_id)
+) -> dict:
+    return {
+        "success": True,
+        "data": [item.model_dump() for item in list_chat_messages(db, current_user.id, chat_id)],
+    }

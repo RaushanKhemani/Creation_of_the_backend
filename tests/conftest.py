@@ -1,14 +1,20 @@
+import os
 import uuid
 
 import pytest
 from fastapi.testclient import TestClient
 
-from app import app
-from db.init_db import init_db
+TEST_DB_PATH = "test_ai_hub.db"
+os.environ["DATABASE_URL"] = f"sqlite:///./{TEST_DB_PATH}"
+
+from app import app  # noqa: E402
+from db.init_db import init_db  # noqa: E402
 
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_database() -> None:
+    if os.path.exists(TEST_DB_PATH):
+        os.remove(TEST_DB_PATH)
     init_db()
 
 
@@ -29,7 +35,7 @@ def unique_user_payload() -> dict:
 
 
 @pytest.fixture()
-def auth_token(client: TestClient, unique_user_payload: dict) -> str:
+def auth_context(client: TestClient, unique_user_payload: dict) -> dict:
     register_res = client.post("/api/v1/auth/register", json=unique_user_payload)
     assert register_res.status_code == 201
 
@@ -38,4 +44,9 @@ def auth_token(client: TestClient, unique_user_payload: dict) -> str:
         json={"email": unique_user_payload["email"], "password": unique_user_payload["password"]},
     )
     assert login_res.status_code == 200
-    return login_res.json()["access_token"]
+    token_data = login_res.json()["data"]
+    return {
+        "access_token": token_data["access_token"],
+        "refresh_token": token_data["refresh_token"],
+        "headers": {"Authorization": f"Bearer {token_data['access_token']}"},
+    }

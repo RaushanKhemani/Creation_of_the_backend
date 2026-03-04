@@ -15,3 +15,4 @@ env/
 
 # Local database
 ai_hub.db
+test_ai_hub.db

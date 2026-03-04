@@ -39,6 +39,13 @@ DEFAULT_PROVIDERS = [
         "enabled": True,
         "notes": "Reasoning-focused assistant from Anthropic.",
     },
+    {
+        "key": "groq",
+        "name": "Groq",
+        "category": "low_latency_inference",
+        "enabled": True,
+        "notes": "Low-latency inference provider.",
+    },
 ]
 
 

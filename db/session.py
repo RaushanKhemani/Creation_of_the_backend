@@ -13,4 +13,4 @@ def get_engine():
     return create_engine(settings.database_url, future=True, pool_pre_ping=True, connect_args=connect_args)
 
 
-SessionLocal = sessionmaker(bind=get_engine(), autoflush=False, autocommit=False, future=True)
+SessionLocal = sessionmaker(bind=get_engine(), autoflush=False, autocommit=False, expire_on_commit=False, future=True)

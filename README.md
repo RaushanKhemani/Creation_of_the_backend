@@ -1,72 +1,45 @@
-# AI Hub Backend
+# AI Hub Backend (Production-Ready Architecture)
 
-Backend service for an AI hub app where users can switch between different AI providers.
+## Layers
+- `api/` - route layer and dependencies
+- `services/` - business logic
+- `providers/` - provider abstraction and async clients
+- `db/` - SQLAlchemy models, session, init
+- `schemas/` - request/response schemas
+- `core/` - app factory, logging, security, exceptions
 
-## Tech Stack
-- FastAPI
-- SQLAlchemy
-- SQLite (default local DB)
-- JWT authentication
-- Pytest
+## Features
+- JWT auth with access + refresh tokens
+- bcrypt password hashing
+- Encrypted user API key storage (Fernet)
+- Role-based access control
+- Per-user rate limiting
+- Centralized error handling
+- Structured logging
+- Usage logging with cost/tokens/latency
+- Async AI provider calls with timeout + retry
+- Chat windows + message history
+- Env-based config
+- Alembic migration scaffold
+- Dockerfile
 
-## Project Structure
-- `app.py`: FastAPI entrypoint
-- `config.py`: environment/config settings
-- `api/`: route handlers and dependencies
-- `core/`: app factory, security, exception handling
-- `db/`: database engine/session/models/init
-- `schemas/`: request/response models
-- `services/`: business logic and provider/chat orchestration
-- `tests/`: automated tests
-
-## Setup
+## Run
 ```powershell
 cd "C:\Users\ASUS\Desktop\ai-hub-backend"
 pip install -r requirements.txt
+python -m uvicorn app:app --reload
 ```
 
-## Run Server
-```powershell
-uvicorn app:app --reload
-```
-
-Open Swagger docs:
+## Swagger
 - http://127.0.0.1:8000/docs
 
-## Quick Health Check
+## Tests
 ```powershell
-python -c "from fastapi.testclient import TestClient; from app import app; c=TestClient(app); r=c.get('/api/v1/health'); print(r.status_code, r.json().get('status'))"
-```
-Expected output: `200 ok`
-
-## Smoke Check Script
-```powershell
+python -m pytest -q
 .\smoke_check.ps1
 ```
 
-## Run Tests
+## Migrations
 ```powershell
-python -m pytest -q
+alembic upgrade head
 ```
-
-## Main API Endpoints
-- `GET /api/v1/health`
-- `GET /api/v1/health/ready`
-- `POST /api/v1/auth/register`
-- `POST /api/v1/auth/login`
-- `POST /api/v1/auth/token` (Swagger OAuth form)
-- `GET /api/v1/auth/me`
-- `GET /api/v1/providers`
-- `GET /api/v1/providers/{provider_key}`
-- `POST /api/v1/providers` (superuser)
-- `POST /api/v1/chat/route`
-- `GET /api/v1/chat/conversations/{conversation_id}/messages`
-
-## Default Local DB
-- Uses SQLite by default
-- File: `ai_hub.db`
-- Tables are auto-created on startup
-
-## Notes
-- `services/provider_gateway.py` currently returns simulated provider responses.
-- This design is ready for plugging in real provider APIs next..

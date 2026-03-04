@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     app_name: str = "AI Hub Backend"
-    app_version: str = "0.2.0"
+    app_version: str = "1.0.0"
     environment: str = "development"
     debug: bool = True
 
@@ -20,10 +20,19 @@ class Settings(BaseSettings):
 
     jwt_secret_key: str = "change-me-in-env"
     jwt_algorithm: str = "HS256"
-    access_token_expire_minutes: int = 60
+    access_token_expire_minutes: int = 30
+    refresh_token_expire_days: int = 14
+
+    api_key_encryption_key: str = "vhVTTqUt--9I61dFmhehjpkr_8z_zXbpOQxrF7b2gwg="
+
+    rate_limit_requests_per_minute: int = 60
+
+    provider_timeout_seconds: int = 20
+    provider_max_retries: int = 2
 
     openai_api_key: str | None = None
     google_api_key: str | None = None
+    anthropic_api_key: str | None = None
     xai_api_key: str | None = None
 
     @field_validator("cors_origins", mode="before")
