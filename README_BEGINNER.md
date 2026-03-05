@@ -1,36 +1,67 @@
-# AI Hub Backend - Beginner Guide
+# AI Hub Backend - Beginner Friendly Guide
 
-## What is this?
-This is the backend (the hidden working part) of your app.
+This file is written for people who are completely new to coding.
 
-If frontend is what users see, backend is what actually does the work behind the scenes.
-
----
-
-## What this backend does in simple words
-- Creates user accounts
-- Logs users in
-- Gives secure login tokens
-- Saves API key details safely
-- Detects which AI provider a key belongs to
-- Lets users create chat windows
-- Sends prompts and returns responses
-- Saves chat history
-- Tracks usage data like latency/tokens/cost
+If you have never used backend, API, Swagger, token, or database before, this guide is for you.
 
 ---
 
-## Words you will see often
-- **API**: a way apps communicate
-- **Endpoint**: a URL where backend accepts requests
-- **Token**: temporary login pass after successful login
-- **Database**: storage for users/chats/messages
-- **Rate limit**: prevents too many requests in short time
+## 1) What Is Backend In Very Simple Words
+
+Think of an app like a restaurant:
+- Frontend = waiter and menu you can see.
+- Backend = kitchen where actual food is prepared.
+
+In your project:
+- Frontend is what users will click and view.
+- Backend is what handles login, chat requests, provider calls, and message saving.
+
+So backend is invisible to users, but it is the most important working part.
 
 ---
 
-## How to run backend
-Open PowerShell:
+## 2) What This Backend Does For Your AI Hub
+
+This backend can:
+- create accounts
+- log in users
+- verify user identity using secure tokens
+- connect to AI providers
+- route chat message to selected provider
+- return answer back
+- save full chat history
+- save usage stats (time/tokens/cost)
+
+This is why your app can become a real multi-provider AI product.
+
+---
+
+## 3) Important Words You Will See
+
+- `API`: a communication method between systems.
+- `Endpoint`: one specific API path like `/api/v1/auth/login`.
+- `Token`: temporary secure pass after login.
+- `Database`: storage for users/messages/history.
+- `Provider`: AI engine like ChatGPT/Gemini/Claude.
+- `Rate limit`: request limit to protect server.
+- `Swagger`: webpage to test backend APIs by clicking buttons.
+
+---
+
+## 4) Where You Can Open And Use Backend
+
+After server starts:
+- Swagger docs: `http://127.0.0.1:8000/docs`
+- Chat UI page: `http://127.0.0.1:8000/chat-ui`
+
+Use Swagger when you want detailed API testing.
+Use Chat UI when you want a simple conversation screen.
+
+---
+
+## 5) Start Backend (First Time Setup)
+
+Open PowerShell and run:
 
 ```powershell
 cd "C:\Users\ASUS\Desktop\ai-hub-backend"
@@ -38,466 +69,269 @@ pip install -r requirements.txt
 python -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-Open in browser:
-- `http://127.0.0.1:8000/docs`
-- `http://127.0.0.1:8000/chat-ui` (simple local chat page)
+If you see:
+- `Uvicorn running on http://127.0.0.1:8000`
 
-This is Swagger UI (interactive API page).
+then backend is ON.
 
----
-
-## Quick health check
-In another PowerShell window:
-
-```powershell
-cd "C:\Users\ASUS\Desktop\ai-hub-backend"
-.\smoke_check.ps1
-```
+Do not close this PowerShell window while testing.
 
 ---
 
-## Full test check
-```powershell
-python -m pytest -q
-```
+## 6) Environment File (`.env`) In Simple Terms
+
+`.env` is a private settings file for secrets and configuration.
+
+You should keep:
+- JWT secret
+- encryption key
+- database URL
+- provider API keys
+
+Never upload real `.env` to public GitHub.
 
 ---
 
-## Basic flow to test in Swagger
-1. `POST /api/v1/auth/register`
-2. `POST /api/v1/auth/login`
-3. `POST /api/v1/integrations/api-key`
-4. `POST /api/v1/chat/windows`
-5. `POST /api/v1/chat/route`
-6. `GET /api/v1/chat/conversations/{chat_id}/messages`
+## 7) Two Ways To Use Provider Keys
+
+### A) Platform Mode (recommended)
+You keep keys in backend `.env`.
+Users do not enter provider keys manually.
+
+### B) BYOK mode (optional)
+User enters own provider key through API.
+
+For normal consumer app experience, Platform Mode is better.
 
 ---
 
-## Folder meaning (easy)
-- `api/` -> endpoint files
-- `services/` -> app logic
-- `providers/` -> AI provider handling
-- `db/` -> database tables/setup
-- `schemas/` -> request/response structures
-- `tests/` -> automatic checks
+## 8) How To Test In Swagger (Step by Step)
 
----
-
-## Security reminder
-- Never share real API keys
-- Never commit secret files
-- If key is leaked, rotate it immediately
-
----
-
-## One-line summary
-This backend is the brain and storage layer of your AI app.
-
----
-
-## What important files do
-- `app.py` -> starts your backend server.
-- `config.py` -> keeps app settings (database URL, token time, limits, etc.).
-- `requirements.txt` -> list of Python packages your backend needs.
-- `smoke_check.ps1` -> quick script to check if backend is working.
-- `README.md` -> technical project documentation.
-- `README_BEGINNER.md` -> simple explanation for non-technical users.
-
-### API layer
-- `api/router.py` -> main API map that connects all route files.
-- `api/dependencies.py` -> common helpers (login check, role check, rate limit).
-- `api/routes/auth.py` -> register/login/refresh/logout/me endpoints.
-- `api/routes/integrations.py` -> API key register + active integration endpoints.
-- `api/routes/chat.py` -> chat window create/list + send message + history endpoints.
-- `api/routes/providers.py` -> list/add providers.
-- `api/routes/health.py` -> health and readiness endpoints.
-
-### Service layer
-- `services/auth_service.py` -> token creation, token refresh, password validation.
-- `services/integration_service.py` -> detects provider from API key and stores key data.
-- `services/chat_service.py` -> main chat logic, retry, timeout, usage log, cost tracking.
-- `services/provider_service.py` -> provider list and default provider setup.
-- `services/provider_gateway.py` -> sends prompt to provider abstraction.
-- `services/crypto_service.py` -> encrypt/decrypt API keys.
-
-### Provider layer
-- `providers/base.py` -> standard format for provider responses.
-- `providers/registry.py` -> picks which provider client to use.
-- `providers/openai_compatible.py` -> real OpenAI-compatible client (OpenAI, Grok, Groq).
-- `providers/gemini_provider.py` -> real Gemini API client.
-- `providers/anthropic_provider.py` -> real Claude API client.
-
-### Database layer
-- `db/base.py` -> base class for all database tables.
-- `db/session.py` -> database connection/session setup.
-- `db/init_db.py` -> creates tables and seeds provider data.
-- `db/models/user.py` -> user accounts table.
-- `db/models/user_api_key.py` -> encrypted user API keys table.
-- `db/models/conversation.py` -> chat window table (`chats`).
-- `db/models/message.py` -> message history table.
-- `db/models/usage_log.py` -> request logs (latency/tokens/cost/errors).
-- `db/models/refresh_token.py` -> refresh token storage table.
-- `db/models/provider.py` -> available providers table.
-
-### Schema layer
-- `schemas/auth.py` -> request/response format for auth.
-- `schemas/integration.py` -> request/response format for integration API key flow.
-- `schemas/chat.py` -> request/response format for chat and history.
-- `schemas/provider.py` -> request/response format for providers.
-- `schemas/user.py` -> user response format.
-- `schemas/common.py` -> unified response envelope format.
-
-### Core layer
-- `core/app_factory.py` -> builds FastAPI app and startup logic.
-- `core/security.py` -> bcrypt password hash/check + JWT helpers.
-- `core/exceptions.py` -> centralized error responses.
-- `core/logging.py` -> structured JSON logging setup.
-
-### Migrations and deployment
-- `alembic.ini` + `alembic/` -> database migration system.
-- `Dockerfile` -> run backend in Docker container.
-- `tests/` -> automated test files.
-
----
-
-## Start Here (First Time Checklist)
-1. Open PowerShell and go to project folder.
-2. Install required packages.
-3. Start backend server.
-4. Open Swagger page (`/docs`).
-5. Create account (`/auth/register`).
-6. Login (`/auth/login`) and copy access token.
-7. Click `Authorize` in Swagger and enter credentials if needed.
-8. Add API key (`/integrations/api-key`).
-9. Create chat window (`/chat/windows`).
-10. Send chat prompt (`/chat/route`).
-11. Check message history (`/chat/conversations/{chat_id}/messages`).
-12. Run smoke check and tests before pushing code.
-
-### Commands
-```powershell
-cd "C:\Users\ASUS\Desktop\ai-hub-backend"
-pip install -r requirements.txt
-python -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload
-```
-
-In another PowerShell:
-```powershell
-cd "C:\Users\ASUS\Desktop\ai-hub-backend"
-.\smoke_check.ps1
-python -m pytest -q
-```
-
----
-
-## Start Here Checklist (Detailed, Non-Coder Version)
-
-### Step 1: Open your project folder
-What this means:
-- You are telling PowerShell to go inside your backend folder.
-- All next commands must run from this folder.
-
-Command:
-```powershell
-cd "C:\Users\ASUS\Desktop\ai-hub-backend"
-```
-
-How to confirm:
-- Your PowerShell line should show the same path at the left side.
-
----
-
-### Step 2: Install required software packages
-What this means:
-- Your backend needs helper libraries (FastAPI, SQLAlchemy, JWT, bcrypt, etc.).
-- `requirements.txt` is the package list.
-
-Command:
-```powershell
-pip install -r requirements.txt
-```
-
-How to confirm:
-- Command finishes without red error lines.
-
----
-
-### Step 3: Start backend server
-What this means:
-- This turns your backend ON.
-- Keep this window open while testing.
-
-Command:
-```powershell
-python -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload
-```
-
-How to confirm:
-- You should see `Uvicorn running on http://127.0.0.1:8000`.
-
----
-
-### Step 4: Open Swagger UI (testing page)
-What this means:
-- Swagger is a built-in test page for your backend.
-- You can click APIs and test without writing frontend code.
-
-Open in browser:
-- `http://127.0.0.1:8000/docs`
-
----
-
-### Step 5: Create user account in Swagger
-What this means:
-- First you create a login account for your backend.
-
-Where:
+### Step 1: Register account
+Endpoint:
 - `POST /api/v1/auth/register`
 
-Sample body:
+Body example:
 ```json
 {
-  "email": "your_email@example.com",
+  "email": "you@example.com",
   "password": "StrongPass123",
   "full_name": "Your Name"
 }
 ```
 
----
-
-### Step 6: Login and get access token
-What this means:
-- Login returns a temporary access token.
-- This token proves "you are logged in".
-
-Where:
+### Step 2: Login
+Endpoint:
 - `POST /api/v1/auth/login`
 
-Sample body:
+Body example:
 ```json
 {
-  "email": "your_email@example.com",
+  "email": "you@example.com",
   "password": "StrongPass123"
 }
 ```
 
----
+### Step 3: Authorize
+In Swagger top-right, click `Authorize`.
 
-### Step 7: Authorize in Swagger
-What this means:
-- You connect your login token to Swagger so protected APIs can run.
+Fill:
+- `username` = your email
+- `password` = your password
 
-How:
-1. Click `Authorize` button in Swagger.
-2. Fill login fields (username = your email, password = your password).
-3. Click `Authorize` and then `Close`.
+Leave these empty for now:
+- `scope`
+- `client_id`
+- `client_secret`
 
----
+Then click `Authorize`.
 
-### Step 8: Add your AI provider API key
-What this means:
-- You connect your account to an AI provider key (OpenAI, Gemini, Claude, Groq, etc.).
-- Backend detects provider automatically.
-
-Where:
-- `POST /api/v1/integrations/api-key`
-
-Sample body:
-```json
-{
-  "api_key": "your_real_provider_api_key"
-}
-```
-
----
-
-### Step 9: Create chat window
-What this means:
-- A chat window is a conversation container.
-- Every message history is saved inside this conversation.
-
-Where:
-- `POST /api/v1/chat/windows`
-
----
-
-### Step 10: Send prompt to AI
-What this means:
-- You ask a question and backend routes it to your active provider.
-
-Where:
+### Step 4: Send chat prompt
+Endpoint:
 - `POST /api/v1/chat/route`
 
-Sample body:
+Body example:
 ```json
 {
-  "prompt": "Give me a backend roadmap for next 2 weeks"
+  "prompt": "Give me a 2-week backend roadmap"
 }
 ```
 
----
-
-### Step 11: Check message history
-What this means:
-- You can verify that chat messages are being stored.
-
-Where:
+### Step 5: Read history
+Take returned `chat_id`, then call:
 - `GET /api/v1/chat/conversations/{chat_id}/messages`
 
-Example:
-- If response from chat route gave `conversation_id = 14`, call history with chat id `14`.
+If this works, your chat flow is working end-to-end.
 
 ---
 
-### Step 12: Run smoke test (quick confidence check)
-What this means:
-- Fast automatic test to confirm major APIs are alive.
+## 9) How To Test In Chat UI (Easy Way)
 
-Command:
+1. Open `http://127.0.0.1:8000/chat-ui`
+2. Register
+3. Login
+4. Send prompt like `hello` or a full question
+5. Check reply appears
+6. Check history loads
+
+This is the easiest way for non-coders to validate real chat behavior.
+
+---
+
+## 10) Why You Sometimes See 422 In Swagger
+
+`422 Validation Error` usually means:
+- required field missing
+- wrong field type
+- wrong JSON format
+
+It does not always mean backend code is broken.
+It often means request format is incorrect.
+
+---
+
+## 11) Why You Sometimes See 401
+
+`401 Unauthorized` usually means:
+- token missing
+- token expired
+- token typed incorrectly
+- not authorized in Swagger
+
+Fix:
+1. Login again
+2. Click `Authorize`
+3. Retry endpoint
+
+---
+
+## 12) Provider Key vs API Key (Common Confusion)
+
+`api_key`:
+- real secret key from provider account
+- example from OpenAI, Google, Anthropic, xAI, Groq
+
+`provider_key`:
+- internal backend label
+- examples: `chatgpt`, `gemini`, `claude`, `grok`, `groq`
+
+You normally provide `api_key`.
+Backend identifies and uses `provider_key`.
+
+---
+
+## 13) Where To Get Real Provider API Keys
+
+- OpenAI (ChatGPT): OpenAI platform API keys page
+- Gemini: Google AI Studio / Google AI API keys page
+- Claude: Anthropic Console
+- Grok: xAI developer console
+- Groq: Groq console key page
+
+Always keep keys private.
+
+---
+
+## 14) File Guide In Very Simple Language
+
+### Root files
+- `app.py`: starts backend app.
+- `config.py`: keeps all settings.
+- `requirements.txt`: package list.
+- `smoke_check.ps1`: quick health test script.
+- `README.md`: main project guide.
+- `README_BEGINNER.md`: this beginner guide.
+
+### `api/`
+All API endpoints that frontend or Swagger calls.
+
+### `services/`
+Core logic of auth/chat/provider behavior.
+
+### `providers/`
+Code that talks to real AI provider APIs.
+
+### `db/`
+Database setup and table models.
+
+### `schemas/`
+Rules for input/output JSON structure.
+
+### `core/`
+Security, errors, logging, app startup.
+
+### `tests/`
+Automated checks for backend behavior.
+
+---
+
+## 15) What Is Saved In Database
+
+- user account details
+- encrypted user provider keys (if BYOK)
+- chat windows
+- message history
+- usage logs (latency/tokens/cost)
+- refresh token records
+- provider records
+
+This means user conversations are not lost between requests.
+
+---
+
+## 16) Quick Health Check Commands
+
+In new PowerShell:
+
 ```powershell
+cd "C:\Users\ASUS\Desktop\ai-hub-backend"
 .\smoke_check.ps1
+python -m pytest -q
+```
+
+If both pass and chat works in `/chat-ui`, backend is in good shape.
+
+---
+
+## 17) If You See Database Column Errors
+
+Sometimes old local DB file does not match new code.
+
+Fix by recreating local DB:
+
+```powershell
+cd "C:\Users\ASUS\Desktop\ai-hub-backend"
+Remove-Item .\ai_hub.db -Force
+python -m uvicorn app:app --reload
 ```
 
 ---
 
-## Swagger UI Explained (Very Simple)
+## 18) Security Rules You Must Follow
 
-### 1) Top area
-- `Authorize` button: connects your login.
-- If not authorized, protected APIs give token errors.
-
-### 2) Endpoint blocks (GET, POST, etc.)
-- Each block is one backend action.
-- `POST` usually sends data.
-- `GET` usually reads data.
-
-### 3) Try it out button
-- Makes fields editable.
-- Without clicking this, you cannot submit custom values.
-
-### 4) Request body box
-- This is where you put JSON input.
-- Example: email/password/api_key/prompt.
-
-### 5) Execute button
-- Sends your request to backend.
-
-### 6) Server response
-- Shows status code + response JSON.
-- `200/201` = success.
-- `400/401/403/404/409/422` = issue, not always code bug.
-
-### 7) Curl section
-- Auto-generated command showing exactly what Swagger sent.
-- Useful for copying into PowerShell (with small syntax changes if needed).
-
-### 8) Response codes list
-- Swagger shows possible outcomes.
-- Seeing `422` in docs is normal; it means "possible validation error".
+- Never share real API keys in screenshot/chat/GitHub.
+- Never commit `.env` containing secrets.
+- If secret leaks, rotate immediately.
+- Use strong passwords and strong JWT secret.
+- Use HTTPS in production.
 
 ---
 
-## OAuth Login Fields in Swagger (What They Mean)
+## 19) What Is Still Needed For Final Public Launch
 
-In `Authorize` popup you may see these fields:
+Backend code is strong, but final launch also needs:
+- stable cloud deployment
+- monitoring dashboards
+- alerting
+- backup policy
+- frontend polish
+- billing and quota strategy
 
-- `grant_type`: authentication method type. For your backend it is password flow. Leave default or `password`.
-- `username`: your login email (example: `raushankhemani@gmail.com`).
-- `password`: your backend account password.
-- `scope`: advanced permission text. Keep empty for now.
-- `client_id`: app id for advanced OAuth apps. Keep empty for now.
-- `client_secret`: app secret for advanced OAuth apps. Keep empty for now.
-
-For your current backend usage:
-- Fill only `username` and `password`.
-- Keep the rest empty unless you intentionally add OAuth clients later.
+This is normal for every serious app.
 
 ---
 
-## File Guide For Non-Coders (What Each Part Does)
+## 20) One-Line Summary
 
-### Root files
-- `app.py`: front door of backend app startup.
-- `config.py`: all settings from environment (security, DB, limits).
-- `requirements.txt`: list of required Python libraries.
-- `smoke_check.ps1`: quick automatic health/auth/chat checks.
-- `Dockerfile`: lets backend run in a container.
-- `alembic.ini`: migration configuration.
+This backend is the secure working brain of your AI Hub that logs users in, talks to real AI providers, stores chats, and returns responses to your app.
 
-### `api/` folder (the visible buttons in Swagger)
-- `api/router.py`: combines all route groups into one API tree.
-- `api/dependencies.py`: shared checks like login, roles, rate limits.
-- `api/routes/auth.py`: account register/login/refresh/me/logout actions.
-- `api/routes/integrations.py`: save API key and read active provider.
-- `api/routes/chat.py`: create windows, send prompts, read history.
-- `api/routes/providers.py`: provider listing and provider operations.
-- `api/routes/health.py`: health/readiness for monitoring.
-
-### `services/` folder (actual business brain)
-- `auth_service.py`: user auth logic, token creation/validation.
-- `integration_service.py`: API key detection and secure storage logic.
-- `chat_service.py`: chat flow, latency/tokens/cost logging.
-- `provider_gateway.py`: common path to send request to providers.
-- `provider_service.py`: provider records and defaults.
-- `crypto_service.py`: encrypt/decrypt sensitive key values.
-
-### `providers/` folder (AI connector design)
-- `base.py`: standard interface every provider client follows.
-- `registry.py`: chooses provider client by provider key.
-- `openai_compatible.py`: real API client for OpenAI-compatible providers.
-- `gemini_provider.py`: real API client for Gemini.
-- `anthropic_provider.py`: real API client for Claude.
-
-### `db/` folder (database side)
-- `session.py`: DB connection/session lifecycle.
-- `init_db.py`: initial table creation and seed setup.
-- `models/`: table definitions (`users`, `api_keys`, `chats`, `messages`, `usage_logs`, `refresh_tokens`, `providers`).
-
-### `schemas/` folder (input/output format)
-- Defines what each endpoint accepts and returns.
-- Prevents broken/missing field data.
-
-### `core/` folder (shared core systems)
-- `security.py`: bcrypt hashing + JWT helpers.
-- `exceptions.py`: unified error response formatter.
-- `logging.py`: structured logs for debugging and analytics.
-- `app_factory.py`: app creation and startup wiring.
-
-### `tests/` folder (auto checks)
-- Confirms auth/chat/provider endpoints work after changes.
-
----
-
-## From Where To Get Provider Key (Provider Key Source)
-
-First important point:
-- In your backend, `provider_key` is internal name like `chatgpt`, `gemini`, `claude`, `grok`, `groq`.
-- You usually do not type this manually if key detection is automatic.
-- You provide real `api_key`, backend maps it to provider.
-
-### OpenAI (ChatGPT)
-- Go to OpenAI platform API keys page.
-- Create a new secret key.
-- Key often starts with `sk-` or `sk-proj-`.
-
-### Google Gemini
-- Go to Google AI Studio / Google AI API key page.
-- Generate API key.
-- Usually used for Gemini models.
-
-### Anthropic Claude
-- Go to Anthropic Console.
-- Create API key from developer/account settings.
-
-### Grok (xAI)
-- Go to xAI developer console.
-- Create API key there.
-
-### Groq
-- Go to Groq Console keys section.
-- Create key (often starts with `gsk_`).
-
-### Security rules for keys
-- Never share keys in chat/screenshots/commits.
-- If leaked once, rotate immediately.
-- Store only in backend secure input or environment variables.
