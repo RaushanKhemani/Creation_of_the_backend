@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from api.routes import ui
 from api.router import api_router
 from config import get_settings
 from core.exceptions import register_exception_handlers
@@ -37,5 +38,6 @@ def create_app() -> FastAPI:
 
     register_exception_handlers(app)
     app.include_router(api_router, prefix=settings.api_prefix)
+    app.include_router(ui.router)
 
     return app

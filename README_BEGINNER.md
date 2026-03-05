@@ -40,6 +40,7 @@ python -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload
 
 Open in browser:
 - `http://127.0.0.1:8000/docs`
+- `http://127.0.0.1:8000/chat-ui` (simple local chat page)
 
 This is Swagger UI (interactive API page).
 

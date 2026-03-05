@@ -9,7 +9,11 @@ class MockProviderClient:
 
     async def generate(self, prompt: str, _: str | None = None) -> ProviderResult:
         await asyncio.sleep(0.05)
-        text = f"[{self.provider_key}] {prompt}"
+        normalized = prompt.strip().lower()
+        if normalized in {"hi", "hello", "hey", "hii"}:
+            text = f"[{self.provider_key}] Hello. How are you today?"
+        else:
+            text = f"[{self.provider_key}] {prompt}"
         tokens_in = max(1, len(prompt) // 4)
         tokens_out = max(1, len(text) // 4)
         return ProviderResult(
