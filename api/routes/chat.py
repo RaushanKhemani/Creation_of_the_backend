@@ -5,7 +5,7 @@ from api.dependencies import enforce_rate_limit, get_current_user, get_db
 from db.models.user import User
 from schemas.chat import ChatRouteRequest, ChatWindowCreateRequest
 from services.chat_service import create_chat_window, list_chat_messages, list_chat_windows, route_chat
-from services.integration_service import get_active_integration
+from services.integration_service import normalize_provider_key
 
 router = APIRouter()
 
@@ -16,12 +16,10 @@ def create_window(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> dict:
-    active = get_active_integration(db, current_user)
-    if not active:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Activate an API key first")
+    provider_key = normalize_provider_key(payload.provider_key or "chatgpt")
     return {
         "success": True,
-        "data": create_chat_window(db, current_user, payload, provider_key=active.provider_key).model_dump(),
+        "data": create_chat_window(db, current_user, payload, provider_key=provider_key).model_dump(),
     }
 
 

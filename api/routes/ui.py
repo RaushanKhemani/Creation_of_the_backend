@@ -120,7 +120,7 @@ CHAT_UI_HTML = """<!doctype html>
     </div>
 
     <div class="card">
-      <h2>2) Connect Provider API Key</h2>
+      <h2>2) Connect Provider API Key (Optional)</h2>
       <div class="row">
         <div class="c8"><input id="apiKey" type="password" placeholder="Paste provider API key (OpenAI/Gemini/Claude/Grok/Groq)" /></div>
         <div class="c4"><button onclick="saveApiKey()">Save API Key</button></div>
@@ -129,7 +129,7 @@ CHAT_UI_HTML = """<!doctype html>
         <div class="c6"><button class="secondary" onclick="loadActiveProvider()">Get Active Provider</button></div>
         <div class="c6"><input id="activeProvider" readonly placeholder="Active provider appears here" /></div>
       </div>
-      <p id="providerStatus"></p>
+      <p id="providerStatus">If your backend has platform keys in `.env`, you can skip this step.</p>
     </div>
 
     <div class="card">

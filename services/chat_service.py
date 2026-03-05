@@ -33,6 +33,26 @@ def _make_title(prompt: str) -> str:
     return compact[:80] if len(compact) > 80 else compact
 
 
+def _get_platform_api_key(provider_key: str) -> str | None:
+    settings = get_settings()
+    mapping = {
+        "chatgpt": settings.openai_api_key,
+        "gemini": settings.google_api_key,
+        "claude": settings.anthropic_api_key,
+        "grok": settings.xai_api_key,
+        "groq": settings.groq_api_key,
+    }
+    return mapping.get(provider_key)
+
+
+def _first_configured_provider_key() -> str | None:
+    ordered = ["chatgpt", "gemini", "claude", "grok", "groq"]
+    for key in ordered:
+        if _get_platform_api_key(key):
+            return key
+    return None
+
+
 def create_chat_window(db: Session, user: User, payload: ChatWindowCreateRequest, provider_key: str) -> ChatWindowRead:
     chat = Chat(user_id=user.id, title=payload.title.strip(), provider_key=provider_key)
     db.add(chat)
@@ -58,7 +78,12 @@ async def _generate_with_retry(provider_key: str, prompt: str, api_key: str | No
     for attempt in range(1, attempts + 1):
         try:
             return await asyncio.wait_for(
-                provider_gateway.generate(provider_key, prompt, api_key),
+                provider_gateway.generate(
+                    provider_key,
+                    prompt,
+                    api_key,
+                    timeout_seconds=settings.provider_timeout_seconds,
+                ),
                 timeout=settings.provider_timeout_seconds,
             )
         except Exception:
@@ -69,21 +94,32 @@ async def _generate_with_retry(provider_key: str, prompt: str, api_key: str | No
 
 def _resolve_provider(db: Session, user: User, payload: ChatRouteRequest):
     active = get_active_integration_record(db, user)
-    if not active:
-        raise ValueError("No active API key configured. Add API key in /api/v1/integrations/api-key")
+    requested = normalize_provider_key(payload.provider_key) if payload.provider_key else None
 
-    selected_provider_key = active.provider_key
-    if payload.provider_key:
-        requested = normalize_provider_key(payload.provider_key)
-        if requested != selected_provider_key:
-            raise ValueError("Requested provider does not match your active API key provider")
-        selected_provider_key = requested
+    selected_provider_key = requested or (active.provider_key if active else None) or _first_configured_provider_key()
+    if not selected_provider_key:
+        raise ValueError(
+            "No provider available. Configure platform provider keys in .env or add user API key in /api/v1/integrations/api-key"
+        )
+
+    api_key_plain: str | None = None
+    key_source = "platform"
+    if active and active.provider_key == selected_provider_key:
+        api_key_plain = active.api_key_plain
+        key_source = "user"
+    else:
+        api_key_plain = _get_platform_api_key(selected_provider_key)
+
+    if not api_key_plain:
+        raise ValueError(
+            f"No API key available for provider '{selected_provider_key}'. Add it in .env or register a user key for that provider."
+        )
 
     provider = db.query(AIProvider).filter(AIProvider.key == selected_provider_key, AIProvider.enabled.is_(True)).first()
     if not provider:
         raise ValueError("Provider unavailable")
 
-    return provider, active
+    return provider, api_key_plain, key_source
 
 
 def _resolve_chat(db: Session, user: User, chat_id: int | None, provider_key: str, prompt: str) -> Chat:
@@ -103,7 +139,7 @@ async def route_chat(db: Session, user: User, payload: ChatRouteRequest) -> Chat
     request_id = uuid4().hex
     started = perf_counter()
 
-    provider, active_integration = _resolve_provider(db, user, payload)
+    provider, api_key_plain, key_source = _resolve_provider(db, user, payload)
     chat = _resolve_chat(db, user, payload.chat_id, provider.key, payload.prompt)
 
     user_msg = Message(
@@ -112,13 +148,13 @@ async def route_chat(db: Session, user: User, payload: ChatRouteRequest) -> Chat
         role="user",
         content=payload.prompt,
         provider_key=provider.key,
-        model_name=f"{provider.key}-simulated-v1",
+        model_name=provider.key,
     )
     db.add(user_msg)
     db.commit()
 
     try:
-        provider_result = await _generate_with_retry(provider.key, payload.prompt, active_integration.api_key_plain)
+        provider_result = await _generate_with_retry(provider.key, payload.prompt, api_key_plain)
         elapsed_ms = int((perf_counter() - started) * 1000)
         rate = COST_PER_1K_TOKENS_USD.get(provider.key, 0.002)
         cost_usd = round((provider_result.tokens_out / 1000) * rate, 6)
@@ -161,6 +197,7 @@ async def route_chat(db: Session, user: User, payload: ChatRouteRequest) -> Chat
                 "tokens_in": provider_result.tokens_in,
                 "tokens_out": provider_result.tokens_out,
                 "cost_usd": cost_usd,
+                "key_source": key_source,
             },
         )
 
@@ -184,7 +221,7 @@ async def route_chat(db: Session, user: User, payload: ChatRouteRequest) -> Chat
                 user_id=user.id,
                 chat_id=chat.id,
                 provider_key=provider.key,
-                model_name=f"{provider.key}-simulated-v1",
+                model_name=provider.key,
                 status="failed",
                 latency_ms=elapsed_ms,
                 error_message=str(exc),

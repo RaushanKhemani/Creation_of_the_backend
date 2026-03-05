@@ -30,10 +30,19 @@ class Settings(BaseSettings):
     provider_timeout_seconds: int = 20
     provider_max_retries: int = 2
 
+    # Platform-managed provider keys (recommended for production UX).
     openai_api_key: str | None = None
     google_api_key: str | None = None
     anthropic_api_key: str | None = None
     xai_api_key: str | None = None
+    groq_api_key: str | None = None
+
+    # Default models per provider.
+    openai_model: str = "gpt-4o-mini"
+    gemini_model: str = "gemini-1.5-flash"
+    anthropic_model: str = "claude-3-5-sonnet-latest"
+    xai_model: str = "grok-2-latest"
+    groq_model: str = "llama-3.3-70b-versatile"
 
     @field_validator("cors_origins", mode="before")
     @classmethod

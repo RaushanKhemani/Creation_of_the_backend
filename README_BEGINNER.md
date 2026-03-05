@@ -123,7 +123,9 @@ This backend is the brain and storage layer of your AI app.
 ### Provider layer
 - `providers/base.py` -> standard format for provider responses.
 - `providers/registry.py` -> picks which provider client to use.
-- `providers/mock_provider.py` -> simulated AI provider response for now.
+- `providers/openai_compatible.py` -> real OpenAI-compatible client (OpenAI, Grok, Groq).
+- `providers/gemini_provider.py` -> real Gemini API client.
+- `providers/anthropic_provider.py` -> real Claude API client.
 
 ### Database layer
 - `db/base.py` -> base class for all database tables.
@@ -442,7 +444,9 @@ For your current backend usage:
 ### `providers/` folder (AI connector design)
 - `base.py`: standard interface every provider client follows.
 - `registry.py`: chooses provider client by provider key.
-- `mock_provider.py`: safe simulated provider for local tests.
+- `openai_compatible.py`: real API client for OpenAI-compatible providers.
+- `gemini_provider.py`: real API client for Gemini.
+- `anthropic_provider.py`: real API client for Claude.
 
 ### `db/` folder (database side)
 - `session.py`: DB connection/session lifecycle.
